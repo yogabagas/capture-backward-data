@@ -2,19 +2,45 @@ package usecase
 
 import (
 	"context"
+	rds "my-github/capture-backward-data/datastore/redis"
+	"my-github/capture-backward-data/domain/repository"
 	sv "my-github/capture-backward-data/domain/service"
-	rds "my-github/capture-bakward-data/datastore/redis"
-	repo "my-github/capture-bakward-data/domain/repository"
 )
 
 type CaptureDataImpl struct {
-	sql   repo.PostgreRepository
-	mongo repo.MongoRepository
-	redis rds.InternalRedis
+	postgre repository.PostgreRepository
+	mongo   repository.MongoRepository
+	redis   rds.InternalRedis
 }
 
-func NewCaptureConnection(sql, mongo, redis string) sv.CaptureData {
-	return &CaptureDataImpl{sql: sql, mongo: mongo, redis: redis}
+type Option func(impl *CaptureDataImpl)
+
+func CacheCaptureData(cache rds.InternalRedis) Option {
+	return func(impl *CaptureDataImpl) {
+		impl.redis = cache
+	}
+}
+
+func MongoCaptureData(mongo repository.MongoRepository) Option {
+	return func(impl *CaptureDataImpl) {
+		impl.mongo = mongo
+	}
+}
+
+func PostgreCaptureData(postgre repository.PostgreRepository) Option {
+	return func(impl *CaptureDataImpl) {
+		impl.postgre = postgre
+	}
+}
+
+func NewCaptureConnection(ops ...Option) sv.CaptureData {
+
+	c := &CaptureDataImpl{}
+
+	for _, opt := range ops {
+		opt(c)
+	}
+	return c
 }
 
 func (c *CaptureDataImpl) CaptureDataBackward(ctx context.Context, from, to string) error {
