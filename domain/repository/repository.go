@@ -3,6 +3,8 @@ package repository
 import (
 	"context"
 	"my-github/capture-backward-data/domain/model"
+
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type PostgreRepository interface {
@@ -10,5 +12,6 @@ type PostgreRepository interface {
 }
 
 type MongoRepository interface {
-	BulkInsertDataAWB(ctx context.Context, awb []model.AWBDetailPartner) error
+	AddBulkInsert(ctx context.Context, collectionName string, operation mongo.WriteModel) error
+	RunBulkInsert(ctx context.Context) error
 }

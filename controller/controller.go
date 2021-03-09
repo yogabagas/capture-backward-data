@@ -22,10 +22,10 @@ func NewCaptureData(capture service.CaptureData) CaptureDataController {
 func (c *CaptureData) CaptureAWB(w http.ResponseWriter, r *http.Request) {
 	now := time.Now()
 
-	awb, err := c.capture.ReadDataAWB(context.Background(), now, now.AddDate(0, -3, 0))
+	err := c.capture.ReadDataAWB(context.Background(), now, now.AddDate(0, -3, 0))
 	if err != nil {
 		return
 	}
 
-	c.capture.InsertDataAWB(context.Background(), awb)
+	c.capture.InsertDataAWB(context.Background())
 }
