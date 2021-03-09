@@ -2,7 +2,7 @@ package mongo
 
 import (
 	"context"
-	"my-github/capture-backward-data/domain/model"
+	"my-github/capture-backward-data/datastore/mongo/bulkop"
 	"my-github/capture-backward-data/domain/repository"
 	"time"
 
@@ -38,6 +38,7 @@ func MongoConnect(uri string) (c *mongo.Client, err error) {
 
 type mongoReadWriter struct {
 	mg *mongo.Database
+	op bulkop.MongoBulkOperation
 }
 
 func MongoMustConnect(uri string, db string) repository.MongoRepository {
@@ -45,9 +46,32 @@ func MongoMustConnect(uri string, db string) repository.MongoRepository {
 	if err != nil {
 		panic(err)
 	}
-	return &mongoReadWriter{mg: c.Database(db)}
+	mongoBulkOp := bulkop.NewCommonMongoBulkOperation()
+	return &mongoReadWriter{
+		mg: c.Database(db),
+		op: mongoBulkOp,
+	}
 }
 
-func (m *mongoReadWriter) BulkInsertDataAWB(ctx context.Context, awb []model.AWBDetailPartner) error {
+func (m *mongoReadWriter) AddBulkInsert(ctx context.Context, collectionName string, operation mongo.WriteModel) error {
+	m.op.AddOperation(collectionName, operation)
 	return nil
+}
+
+func (m *mongoReadWriter) RunBulkInsert(ctx context.Context) error {
+	operationList := m.op.GetOperationList()
+	bulkOption := options.BulkWriteOptions{}
+	bulkOption.SetOrdered(true)
+
+	for key, value := range operationList {
+		collection := m.mg.Collection(key)
+		_, err := collection.BulkWrite(ctx, value, &bulkOption)
+
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+
 }
