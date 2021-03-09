@@ -40,12 +40,12 @@ type mongoReadWriter struct {
 	mg *mongo.Database
 }
 
-func MongoMustConnect(uri string, db string) (repository.MongoRepository, error) {
+func MongoMustConnect(uri string, db string) repository.MongoRepository {
 	c, err := MongoConnect(uri)
 	if err != nil {
 		panic(err)
 	}
-	return &mongoReadWriter{mg: c.Database(db)}, nil
+	return &mongoReadWriter{mg: c.Database(db)}
 }
 
 func (m *mongoReadWriter) BulkInsertDataAWB(ctx context.Context, awb []model.AWBDetailPartner) error {

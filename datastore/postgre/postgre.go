@@ -15,8 +15,10 @@ type sqlReadWriter struct {
 	db *sql.DB
 }
 
-func NewPostgreDriver(host, name, user, password string, port int) (repository.PostgreRepository, error) {
-	postgreConn := fmt.Sprintf("host=%s port=%d user%s "+"password=%s dbname=%s sslmode=disable",
+const ()
+
+func NewPostgreConn(host, name, user, password string, port int) repository.PostgreRepository {
+	postgreConn := fmt.Sprintf("host=%s port=%d user=%s "+"password=%s dbname=%s sslmode=disable",
 		host, port, user, password, name)
 
 	db, err := sql.Open("postgres", postgreConn)
@@ -24,14 +26,12 @@ func NewPostgreDriver(host, name, user, password string, port int) (repository.P
 		panic(err)
 	}
 
-	defer db.Close()
-
 	err = db.Ping()
 	if err != nil {
 		panic(err)
 	}
 
-	return &sqlReadWriter{sql: db}, nil
+	return &sqlReadWriter{db: db}
 }
 
 func (db *sqlReadWriter) ReadDataInterval(ctx context.Context, from, to string) ([]model.AWBDetailPartner, error) {

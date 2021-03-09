@@ -3,8 +3,10 @@ package usecase
 import (
 	"context"
 	rds "my-github/capture-backward-data/datastore/redis"
+	"my-github/capture-backward-data/domain/model"
 	"my-github/capture-backward-data/domain/repository"
 	sv "my-github/capture-backward-data/domain/service"
+	"time"
 )
 
 type CaptureDataImpl struct {
@@ -43,6 +45,10 @@ func NewCaptureConnection(ops ...Option) sv.CaptureData {
 	return c
 }
 
-func (c *CaptureDataImpl) CaptureDataBackward(ctx context.Context, from, to string) error {
+func (c *CaptureDataImpl) ReadDataAWB(ctx context.Context, from, to time.Time) ([]model.AWBDetailPartner, error) {
+	return nil, nil
+}
+
+func (c *CaptureDataImpl) InsertDataAWB(ctx context.Context, awb []model.AWBDetailPartner) error {
 	return nil
 }
